@@ -4,7 +4,7 @@ import pandas as pd
 
 import plotly.graph_objects as go
 import plotly_express as px
-import pmdarima as pmda
+from .arima import auto_arima
 
 from statsmodels.tsa.stattools import adfuller
 from scipy.stats import boxcox
@@ -178,7 +178,7 @@ def upload():
                 arima_manual(transformed_one, ar=ar, d=differ, ma=ma)
             else:
                 def arima_x(data):
-                    best_model = pmda.auto_arima(data, seasonal=False, trend=None, trace=True, d=differ, suppress_warnings=True, start_p=1, start_q=1, scoring='mse', seasonal_test="D")
+                    best_model = auto_arima(data, seasonal=False, trend=None, trace=True, d=differ, suppress_warnings=True, start_p=1, start_q=1, scoring='mse', seasonal_test="D")
                     st.write(best_model.summary())
                 arima_x(transformed_data)
         adf(df, data)
