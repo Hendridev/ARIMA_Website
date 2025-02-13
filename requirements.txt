@@ -8,3 +8,4 @@ scipy
 plotly_express
 plotly
 pmdarima
+.arima
