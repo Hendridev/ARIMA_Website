@@ -72,8 +72,8 @@ def upload():
         ))
 
         # Significance lines (dashed)
-        fig.add_hline(y=confint_approx[1,0], line_width=1, line_dash="dash", line_color="white") # manually set the confidence intervals
-        fig.add_hline(y=confint_approx[0,0], line_width=1, line_dash="dash", line_color="white")
+        fig.add_hline(y=confint_approx[1,0], line_width=1, line_dash="dash", line_color="black") # manually set the confidence intervals
+        fig.add_hline(y=confint_approx[0,0], line_width=1, line_dash="dash", line_color="black")
 
 
 
@@ -103,8 +103,8 @@ def upload():
 
         # Significance lines (dashed)
 
-        fig.add_hline(y=confint_approx[1,0], line_width=1, line_dash="dash", line_color="white")
-        fig.add_hline(y=confint_approx[0,0], line_width=1, line_dash="dash", line_color="white")
+        fig.add_hline(y=confint_approx[1,0], line_width=1, line_dash="dash", line_color="black")
+        fig.add_hline(y=confint_approx[0,0], line_width=1, line_dash="dash", line_color="black")
 
 
         # Customize layout
