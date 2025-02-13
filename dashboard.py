@@ -8,8 +8,6 @@ import plotly_express as px
 from statsmodels.tsa.stattools import adfuller
 from scipy.stats import boxcox
 from statsmodels.tsa.arima.model import ARIMA
-from statsmodels.stats.diagnostic import kstest_normal
-from scipy.stats import shapiro
 from statsmodels.tsa import stattools as tsa
 
 #streamlit
@@ -54,7 +52,7 @@ def upload():
 
     def acf_plot(transformed_data):
         # Calculate the ACF
-        acf, confint = tsa.acf(transformed_data, alpha=0.01, nlags=20)
+        acf, confint = tsa.acf(transformed_data, alpha=0.05, nlags=20)
 
         # Significance level (used for dashed lines) - it looks like the original uses a different level than 0.05
         sig_level = 0.05  # Adjust as needed to visually match the original plot
@@ -89,7 +87,7 @@ def upload():
         st.plotly_chart(fig, use_container_width=True)
         
     def pacf_plot(transformed_data):
-        pacf, confint = tsa.pacf(transformed_data, alpha=0.01, nlags=20)
+        pacf, confint = tsa.pacf(transformed_data, alpha=0.05, nlags=20)
 
         sig_level = 0.05
         confint_approx = np.array([[-1.96 / np.sqrt(len(transformed_data))] * (len(pacf)), [1.96 / np.sqrt(len(transformed_data))] * len(pacf)])* (1-sig_level/2)
@@ -119,9 +117,11 @@ def upload():
 
         st.plotly_chart(fig, use_container_width=True)
 
+    # function arima
+    differ = 0
     def arima_x(df, data):
-        def arima_manual(transformed_data):
-            model = ARIMA(transformed_data, order=(2,1,0))
+        def arima_manual(transformed_data, ar, d, ma):
+            model = ARIMA(transformed_data, order=(ar,d,ma))
             model_fit = model.fit()
             st.write(model_fit.summary())
 
@@ -150,21 +150,37 @@ def upload():
             adf_test = adfuller(transformed_data, regression="ct")
             st.write('ADF Statistic: %f' % adf_test[0])
             st.write('p-value: %f' % adf_test[1])
-
-            if adf_test[1] > 0.05:
+            
+            differ = 0
+            if adf_test[1] >= 0.05:
+                differ += 1
                 transformed_data = transformed_data.diff()
                 transformed_data.dropna(inplace=True)
                 st.title("Data After Differencing")
+                st.write("Data Has Been Differencing Once")
                 st.dataframe(transformed_data, use_container_width=True)
                 adf_test = adfuller(transformed_data, regression="ct")
                 st.write('ADF Statistic: %f' % adf_test[0])
                 st.write('p-value: %f' % adf_test[1])
-
+            else:
+                transformed_data
             st.write("Mean:",transformed_data.mean())
             plot(transformed_data[0])
             acf_plot(transformed_data[0])
             pacf_plot(transformed_data[0])
-            arima_manual(transformed_one)
+            st.divider()
+            st.title("Please choose the method for the ARIMA model")
+            method = st.radio("Choose the method", ("Auto ARIMA", "Manual Input"))
+            if method == "Manual Input":
+                ar = st.number_input("Input AR (PACF)", min_value=0, step=1)
+                ma = st.number_input("Input MA (ACF)", min_value=0, step=1)
+                arima_manual(transformed_one, ar=ar, d=differ, ma=ma)
+            else:
+                from pmdarima import auto_arima
+                def arima_x(data):
+                    best_model = auto_arima(data, seasonal=False, trend=None, trace=True, d=differ, suppress_warnings=True, start_p=1, start_q=1, scoring='mse', seasonal_test="D")
+                    st.write(best_model.summary())
+                arima_x(transformed_data)
         adf(df, data)
 
     dataframe = st.file_uploader(
@@ -202,7 +218,7 @@ def upload():
 
         def drawBtn():
             option= ...
-            st.button("Diagnostic", on_click= onSearch, args= [option])
+            st.button("Run", on_click= onSearch, args= [option])
         drawBtn()
 
         if st.session_state["clicked"]:
