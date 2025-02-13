@@ -4,7 +4,7 @@ import pandas as pd
 
 import plotly.graph_objects as go
 import plotly_express as px
-from .arima import auto_arima
+from pdarima import auto_arima
 
 from statsmodels.tsa.stattools import adfuller
 from scipy.stats import boxcox
